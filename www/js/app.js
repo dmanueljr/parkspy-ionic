@@ -59,8 +59,8 @@ parkspy.controller('MapCtrl', function($scope, $http) {
                     var meterImage = 'img/meter-icon.png';
                     var meterMarkers = new google.maps.Marker({
                         position: new google.maps.LatLng($scope.meters[i].latitude, $scope.meters[i].longitude),
-                        map:map,
-                        icon:meterImage
+                        map: map,
+                        icon: meterImage
                     });
                 };
             }); 
@@ -75,9 +75,11 @@ parkspy.controller('MapCtrl', function($scope, $http) {
                     // checks valid call for lat lon data
                     // console.log("lat: " + $scope.meters[i].latitude );
                     // console.log("lon: " + $scope.meters[i].longitude);
+                    var lotImage = 'img/lot-icon.png';
                     var lotMarkers = new google.maps.Marker({
                         position: new google.maps.LatLng($scope.lots[i].latitude, $scope.lots[i].longitude),
-                        map:map,
+                        map: map,
+                        icon: lotImage
                     });
                 };
             });
