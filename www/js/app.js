@@ -61,9 +61,25 @@ parkspy.controller('MapCtrl', function($scope, $http) {
                         map:map
                     });
                 };
+            }); 
 
+        $scope.lots = [];
+        $http.get("https://parking.api.smgov.net/lots/", { cache: true })
+            .then(function(response){
+                $scope.lots = response.data;
+                console.log($scope.lots.length);
 
-            });  
+                for (var i = 0; i < ($scope.lots.length); i++) {
+                    // checks valid call for lat lon data
+                    // console.log("lat: " + $scope.meters[i].latitude );
+                    // console.log("lon: " + $scope.meters[i].longitude);
+                    var lotMarkers = new google.maps.Marker({
+                        position: new google.maps.LatLng($scope.lots[i].latitude, $scope.lots[i].longitude),
+                        map:map
+                    });
+                };
+            });
+
 
         var trafficLayer = new google.maps.TrafficLayer();
         trafficLayer.setMap(map);
