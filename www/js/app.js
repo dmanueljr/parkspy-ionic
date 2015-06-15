@@ -18,20 +18,23 @@ var parkspy = angular.module('starter', ['ionic'])
   });
 })
 
-
+// adds map controller
 parkspy.controller('MapCtrl', function($scope, $http) {
 
+    // runs the following on load
     google.maps.event.addDomListener(window, 'load', function() {
 
         // variable center set to santa monica city hall
         var center = new google.maps.LatLng(34.011769, -118.49162);
 
+        // default map options
         var mapOptions = {
           center: center,
-          zoom: 16,
+          zoom: 18,
           mapTypeId: google.maps.MapTypeId.ROADMAP
         };
 
+        // targets html element where map will be placed
         var map = new google.maps.Map(document.getElementById('map'), mapOptions);
 
         // gets current position
@@ -40,55 +43,77 @@ parkspy.controller('MapCtrl', function($scope, $http) {
             // map.setCenter(pos);
         });
 
+        // adds test marker to map center => Santa Monica city hall
         var marker = new google.maps.Marker({
             position: center,
             map: map
         });
 
-
+        // collects and plots parking meters on map
         $scope.meters = [];
         $http.get("https://parking.api.smgov.net/meters/", { cache: true })
             .then(function(response){
                 $scope.meters = response.data;
-                console.log($scope.meters.length);
+                // counts number of meters
+                // console.log($scope.meters.length);
 
                 for (var i = 0; i < ($scope.meters.length); i++) {
                     // checks valid call for lat lon data
                     // console.log("lat: " + $scope.meters[i].latitude );
                     // console.log("lon: " + $scope.meters[i].longitude);
+
                     var meterImage = 'img/meter-icon.png';
-                    var meterMarkers = new google.maps.Marker({
+                    var meterMarker = new google.maps.Marker({
                         position: new google.maps.LatLng($scope.meters[i].latitude, $scope.meters[i].longitude),
                         map: map,
                         icon: meterImage
                     });
+
+                    var meterInfoWindow = new google.maps.InfoWindow({
+                          content: "meter test"
+                    });
+                    google.maps.event.addListener(meterMarker, 'click', function() {
+                          meterInfoWindow.open(map, this);
+                    });
+
                 };
             }); 
 
+        // collects and plots parking lots/structures on map
         $scope.lots = [];
         $http.get("https://parking.api.smgov.net/lots/", { cache: true })
             .then(function(response){
                 $scope.lots = response.data;
-                console.log($scope.lots.length);
+                // counts number of lots
+                // console.log($scope.lots.length);
 
                 for (var i = 0; i < ($scope.lots.length); i++) {
                     // checks valid call for lat lon data
                     // console.log("lat: " + $scope.meters[i].latitude );
                     // console.log("lon: " + $scope.meters[i].longitude);
+
                     var lotImage = 'img/lot-icon.png';
-                    var lotMarkers = new google.maps.Marker({
+                    var lotMarker = new google.maps.Marker({
                         position: new google.maps.LatLng($scope.lots[i].latitude, $scope.lots[i].longitude),
                         map: map,
                         icon: lotImage
                     });
+
+                    var lotInfoWindow = new google.maps.InfoWindow({
+                        content: "test"
+                    });
+                    google.maps.event.addListener(lotMarker, 'click', function() {
+                          lotInfoWindow.open(map, this);
+                    });
+
                 };
             });
 
-
+        // adds traffic layer to map
         var trafficLayer = new google.maps.TrafficLayer();
         trafficLayer.setMap(map);
 
-
+        // calls map
         $scope.map = map;
 
     });
