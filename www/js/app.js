@@ -80,9 +80,9 @@ parkspy.controller('MapCtrl', function($scope, $http) {
 
         // collects and plots parking lots/structures on map
         $scope.lots = [];
-        $http.get("https://parking.api.smgov.net/lots/", { cache: true })
-            .then(function(response){
-                $scope.lots = response.data;
+        $http.get("https://parking.api.smgov.net/lots/")
+            .success(function(data, status, headers, config){
+                $scope.lots = data;
                 // counts number of lots
                 // console.log($scope.lots.length);
 
@@ -105,12 +105,15 @@ parkspy.controller('MapCtrl', function($scope, $http) {
                 };
 
                 //captures lot data and makes them available for display in infowindow when lot marker is clicked
+                var lotInfoWindow = new google.maps.InfoWindow();
                 function getLotData(lD, lM) {
-                    var lotInfoWindow = new google.maps.InfoWindow();
                     // console.log($scope.lots[i].id);                                         
                     google.maps.event.addListener(lM, 'click', function() {
-                          lotInfoWindow.open(map, lM);
-                          lotInfoWindow.setContent("This is my ID: " + String(lD.id));
+                        lotInfoWindow.open(map, lM);
+                        lotInfoWindow.setContent(
+                            "<p>" + "<b>" + lD.name + "</b>" + "<br />" 
+                            + "Spaces: " + lD.available_spaces + "</p>"
+                        );
                     });
                 };
 
