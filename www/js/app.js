@@ -69,9 +69,8 @@ parkspy.controller('MapCtrl', function($scope, $http) {
                         icon: meterImage
                     });
 
-                    var meterInfoWindow = new google.maps.InfoWindow({
-                          content: "meter test"
-                    });
+                    var meterInfoWindow = new google.maps.InfoWindow();
+                    meterInfoWindow.setContent("This is my ID: " + String($scope.meters[i].meter_id))                    
                     google.maps.event.addListener(meterMarker, 'click', function() {
                           meterInfoWindow.open(map, this);
                     });
@@ -87,26 +86,34 @@ parkspy.controller('MapCtrl', function($scope, $http) {
                 // counts number of lots
                 // console.log($scope.lots.length);
 
+
+                // collects and plots parking lots/structures on map
                 for (var i = 0; i < ($scope.lots.length); i++) {
                     // checks valid call for lat lon data
                     // console.log("lat: " + $scope.meters[i].latitude );
                     // console.log("lon: " + $scope.meters[i].longitude);
 
+                    var lotData = $scope.lots[i];
                     var lotImage = 'img/lot-icon.png';
+                    var lotPosition = new google.maps.LatLng(lotData.latitude, lotData.longitude);
                     var lotMarker = new google.maps.Marker({
-                        position: new google.maps.LatLng($scope.lots[i].latitude, $scope.lots[i].longitude),
+                        position: lotPosition,
                         map: map,
                         icon: lotImage
                     });
-
-                    var lotInfoWindow = new google.maps.InfoWindow({
-                        content: "test"
-                    });
-                    google.maps.event.addListener(lotMarker, 'click', function() {
-                          lotInfoWindow.open(map, this);
-                    });
-
+                    getLotData(lotData, lotMarker);
                 };
+
+                //captures lot data and makes them available for display in infowindow when lot marker is clicked
+                function getLotData(lD, lM) {
+                    var lotInfoWindow = new google.maps.InfoWindow();
+                    // console.log($scope.lots[i].id);                                         
+                    google.maps.event.addListener(lM, 'click', function() {
+                          lotInfoWindow.open(map, lM);
+                          lotInfoWindow.setContent("This is my ID: " + String(lD.id));
+                    });
+                };
+
             });
 
         // adds traffic layer to map
