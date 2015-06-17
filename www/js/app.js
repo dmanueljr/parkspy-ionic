@@ -51,32 +51,42 @@ parkspy.controller('MapCtrl', function($scope, $http) {
 
         // collects and plots parking meters on map
         $scope.meters = [];
-        $http.get("https://parking.api.smgov.net/meters/", { cache: true })
-            .then(function(response){
-                $scope.meters = response.data;
+        $http.get("https://parking.api.smgov.net/meters/")
+            .success(function(data, status, headers, config){
+                $scope.meters = data;
                 // counts number of meters
                 // console.log($scope.meters.length);
 
+                // collects and plots parking meters on map
                 for (var i = 0; i < ($scope.meters.length); i++) {
                     // checks valid call for lat lon data
                     // console.log("lat: " + $scope.meters[i].latitude );
                     // console.log("lon: " + $scope.meters[i].longitude);
 
+                    var meterData = $scope.meters[i];
                     var meterImage = 'img/meter-icon.png';
+                    var meterPosition = new google.maps.LatLng(meterData.latitude, meterData.longitude)
                     var meterMarker = new google.maps.Marker({
-                        position: new google.maps.LatLng($scope.meters[i].latitude, $scope.meters[i].longitude),
+                        position: meterPosition,
                         map: map,
                         icon: meterImage
                     });
-
-                    var meterInfoWindow = new google.maps.InfoWindow();
-                    meterInfoWindow.setContent("This is my ID: " + String($scope.meters[i].meter_id))                    
-                    google.maps.event.addListener(meterMarker, 'click', function() {
-                          meterInfoWindow.open(map, this);
-                    });
-
+                    getMeterData(meterData, meterMarker)
                 };
+
+                //captures meter data and makes them available for display in infowindow when meter marker is clicked
+                var meterInfoWindow = new google.maps.InfoWindow();
+                function getMeterData(mD, mM) {
+                    google.maps.event.addListener(mM, 'click', function() {
+                        meterInfoWindow.open(map, mM);
+                        meterInfoWindow.setContent(
+                            "<p>" + "ID: " + "<b>" + mD.meter_id + "</b>" + "<br />"
+                            + "<p>" + "Street: " + "<b>" + mD.street_address + "</b>"
+                        );
+                    });
+                }
             }); 
+
 
         // collects and plots parking lots/structures on map
         $scope.lots = [];
@@ -107,7 +117,6 @@ parkspy.controller('MapCtrl', function($scope, $http) {
                 //captures lot data and makes them available for display in infowindow when lot marker is clicked
                 var lotInfoWindow = new google.maps.InfoWindow();
                 function getLotData(lD, lM) {
-                    // console.log($scope.lots[i].id);                                         
                     google.maps.event.addListener(lM, 'click', function() {
                         lotInfoWindow.open(map, lM);
                         lotInfoWindow.setContent(
