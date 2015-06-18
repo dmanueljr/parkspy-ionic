@@ -84,7 +84,7 @@ parkspy.controller('MapCtrl', function($scope, $http) {
                             + "<p>" + "Street: " + "<b>" + mD.street_address + "</b>"
                         );
                     });
-                }
+                };
             }); 
 
 
@@ -125,7 +125,6 @@ parkspy.controller('MapCtrl', function($scope, $http) {
                         );
                     });
                 };
-
             });
 
         // adds traffic layer to map
