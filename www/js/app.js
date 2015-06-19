@@ -54,6 +54,14 @@ parkspy.controller('MapCtrl', function($scope, $http) {
         $http.get("https://parking.api.smgov.net/meters/")
             .success(function(data, status, headers, config){
                 $scope.meters = data;
+
+                $scope.meterSession = [];
+                $http.get("https://parking.api.smgov.net/meters/events/").success(function(data, status, headers, config) {
+                    $scope.meterSession = data;
+                    console.log($scope.meterSession.length)
+                });
+
+
                 // counts number of meters
                 // console.log($scope.meters.length);
 
@@ -62,26 +70,57 @@ parkspy.controller('MapCtrl', function($scope, $http) {
                     // checks valid call for lat lon data
                     // console.log("lat: " + $scope.meters[i].latitude );
                     // console.log("lon: " + $scope.meters[i].longitude);
-
                     var meterData = $scope.meters[i];
-                    var meterImage = 'img/meter-icon.png';
+                    var getValidIcon = function() {
+                        if (meterData.active == true) {
+                            return "img/meter-icon.png";
+                        } else {
+                            return "img/broken-meter-icon.png";
+                        };
+                    };
+                    var meterData = $scope.meters[i];
                     var meterPosition = new google.maps.LatLng(meterData.latitude, meterData.longitude)
                     var meterMarker = new google.maps.Marker({
                         position: meterPosition,
                         map: map,
-                        icon: meterImage
                     });
-                    getMeterData(meterData, meterMarker)
+                    meterMarker.setIcon(getValidIcon());
+                    getMeterData(meterData, meterMarker);
                 };
+
 
                 //captures meter data and makes them available for display in infowindow when meter marker is clicked
                 var meterInfoWindow = new google.maps.InfoWindow();
                 function getMeterData(mD, mM) {
+
+                    // var convertedDate = function() {
+                    //     var date = new Date();
+                    //     var newDate = date.toISOString().replace(/[^0-9TZ.]/g, '').replace(/\.\d+/, '');
+                    //     return newDate;
+                    // }
+
+                    // var getSession = function() {
+                    //     if ($scope.meterSession) {
+                    //         return
+                    //     }
+                    // }
+
+                    var getMeterStatus = function () {
+                        if (mD.active == true ) {
+                            return "Status: Working";
+                        } else {
+                            return "Status: Out of service";
+                        };
+
+                    };
+
+
                     google.maps.event.addListener(mM, 'click', function() {
                         meterInfoWindow.open(map, mM);
                         meterInfoWindow.setContent(
                             "<p>" + "ID: " + "<b>" + mD.meter_id + "</b>" + "<br />"
-                            + "<p>" + "Street: " + "<b>" + mD.street_address + "</b>"
+                            + "<p>" + "Street: " + "<b>" + mD.street_address + "</b>" + "<br />"
+                            + getMeterStatus()
                         );
                     });
                 };
@@ -141,7 +180,8 @@ parkspy.controller('MapCtrl', function($scope, $http) {
 
 
 
-
+// sample meter activity call (replace with valid time - within the last three hours) 
+//     => https://parking.api.smgov.net/meters/05S1442/events/since/20150618T193020Z
 
 
 
