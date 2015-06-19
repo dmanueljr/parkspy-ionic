@@ -40,7 +40,7 @@ parkspy.controller('MapCtrl', function($scope, $http) {
         // gets current position
         navigator.geolocation.getCurrentPosition(function(position) {
             var pos = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-            // map.setCenter(pos);
+            map.setCenter(pos);
         });
 
         // adds test marker to map center => Santa Monica city hall
@@ -53,25 +53,23 @@ parkspy.controller('MapCtrl', function($scope, $http) {
         $scope.meters = [];
         $http.get("https://parking.api.smgov.net/meters/")
             .success(function(data, status, headers, config){
-                $scope.meters = data;
-
-                $scope.meterSession = [];
-                $http.get("https://parking.api.smgov.net/meters/events/").success(function(data, status, headers, config) {
-                    $scope.meterSession = data;
-                    console.log($scope.meterSession.length)
-                });
-
-
+                $scope.meters = data;                
                 // counts number of meters
                 // console.log($scope.meters.length);
 
+
+                $scope.meterSession = [];
+                $http.get("https://parking.api.smgov.net/meters/events/")
+                    .success(function(data, status, headers, config) {
+                        $scope.meterSession = data;
+                        console.log($scope.meterSession.length)
+                });
+
+
                 // collects and plots parking meters on map
                 for (var i = 0; i < ($scope.meters.length); i++) {
-                    // checks valid call for lat lon data
-                    // console.log("lat: " + $scope.meters[i].latitude );
-                    // console.log("lon: " + $scope.meters[i].longitude);
                     var meterData = $scope.meters[i];
-                    var getValidIcon = function() {
+                    var getIcon = function() {
                         if (meterData.active == true) {
                             return "img/meter-icon.png";
                         } else {
@@ -84,7 +82,7 @@ parkspy.controller('MapCtrl', function($scope, $http) {
                         position: meterPosition,
                         map: map,
                     });
-                    meterMarker.setIcon(getValidIcon());
+                    meterMarker.setIcon(getIcon());
                     getMeterData(meterData, meterMarker);
                 };
 
@@ -138,10 +136,6 @@ parkspy.controller('MapCtrl', function($scope, $http) {
 
                 // collects and plots parking lots/structures on map
                 for (var i = 0; i < ($scope.lots.length); i++) {
-                    // checks valid call for lat lon data
-                    // console.log("lat: " + $scope.meters[i].latitude );
-                    // console.log("lon: " + $scope.meters[i].longitude);
-
                     var lotData = $scope.lots[i];
                     var lotImage = 'img/lot-icon.png';
                     var lotPosition = new google.maps.LatLng(lotData.latitude, lotData.longitude);
