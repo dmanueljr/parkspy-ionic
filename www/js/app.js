@@ -58,17 +58,11 @@ parkspy.controller('MapCtrl', function($scope, $http) {
                 // console.log($scope.meters.length);
 
 
-                $scope.meterSession = [];
-                $http.get("https://parking.api.smgov.net/meters/events/")
-                    .success(function(data, status, headers, config) {
-                        $scope.meterSession = data;
-                        console.log($scope.meterSession.length)
-                });
-
-
                 // collects and plots parking meters on map
                 for (var i = 0; i < ($scope.meters.length); i++) {
                     var meterData = $scope.meters[i];
+
+                    //checks meter status for correct icon
                     var getIcon = function() {
                         if (meterData.active == true) {
                             return "img/meter-icon.png";
@@ -76,6 +70,7 @@ parkspy.controller('MapCtrl', function($scope, $http) {
                             return "img/broken-meter-icon.png";
                         };
                     };
+
                     var meterData = $scope.meters[i];
                     var meterPosition = new google.maps.LatLng(meterData.latitude, meterData.longitude)
                     var meterMarker = new google.maps.Marker({
@@ -84,6 +79,7 @@ parkspy.controller('MapCtrl', function($scope, $http) {
                     });
                     meterMarker.setIcon(getIcon());
                     getMeterData(meterData, meterMarker);
+                    // getMeterSession(meterData);
                 };
 
 
@@ -91,29 +87,29 @@ parkspy.controller('MapCtrl', function($scope, $http) {
                 var meterInfoWindow = new google.maps.InfoWindow();
                 function getMeterData(mD, mM) {
 
-                    // var convertedDate = function() {
-                    //     var date = new Date();
-                    //     var newDate = date.toISOString().replace(/[^0-9TZ.]/g, '').replace(/\.\d+/, '');
-                    //     return newDate;
-                    // }
-
-                    // var getSession = function() {
-                    //     if ($scope.meterSession) {
-                    //         return
-                    //     }
-                    // }
 
                     var getMeterStatus = function () {
                         if (mD.active == true ) {
                             return "Status: Working";
                         } else {
-                            return "Status: Out of service";
+                            return "Status: Not available or out of service";
                         };
 
                     };
 
-
                     google.maps.event.addListener(mM, 'click', function() {
+
+
+
+                    $scope.meterSession = [];
+                        $http.get("https://parking.api.smgov.net/meters/" + mD.meter_id + "/events/since/0")
+                            .success(function(data, status, headers, config) {
+                                $scope.meterSession = data;
+                                console.log($scope.meterSession)
+                        });
+
+
+
                         meterInfoWindow.open(map, mM);
                         meterInfoWindow.setContent(
                             "<p>" + "ID: " + "<b>" + mD.meter_id + "</b>" + "<br />"
