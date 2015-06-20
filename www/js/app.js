@@ -27,6 +27,7 @@ parkspy.controller('MapCtrl', function($scope, $http) {
         // variable center set to santa monica city hall
         var center = new google.maps.LatLng(34.011769, -118.49162);
 
+        // defines map style
         var mapStyle = [
               {
                 "featureType": "road",
@@ -51,16 +52,22 @@ parkspy.controller('MapCtrl', function($scope, $http) {
         // targets html element where map will be placed
         var map = new google.maps.Map(document.getElementById('map'), mapOptions);
 
-
+        //applies map style
         var styledMapOptions = {
             name: "Santa Monica Map"
         };
-
-
         var SantaMonicaRoadMapType = new google.maps.StyledMapType(mapStyle, styledMapOptions);
-
         map.mapTypes.set('santamonicamap', SantaMonicaRoadMapType);
         map.setMapTypeId('santamonicamap');
+
+        // adds traffic layer to map
+        var trafficLayer = new google.maps.TrafficLayer();
+        trafficLayer.setMap(map);
+
+        // calls map
+        $scope.map = map;
+
+
 
         // gets current position
         navigator.geolocation.getCurrentPosition(function(position) {
@@ -74,6 +81,46 @@ parkspy.controller('MapCtrl', function($scope, $http) {
             map: map
         });
 
+
+        // collects and plots parking lots/structures on map
+        $scope.lots = [];
+        $http.get("https://parking.api.smgov.net/lots/")
+            .success(function(data, status, headers, config){
+                $scope.lots = data;
+                // counts number of lots
+                // console.log($scope.lots.length);
+
+
+                // collects and plots parking lots/structures on map in clusters
+                var lotMarkers = [];
+                for (var i = 0; i < ($scope.lots.length); i++) {
+                    var lotData = $scope.lots[i];
+                    var lotImage = 'img/lot-icon.png';
+                    var lotPosition = new google.maps.LatLng(lotData.latitude, lotData.longitude);
+                    var lotMarker = new google.maps.Marker({
+                        position: lotPosition,
+                        map: map,
+                        icon: lotImage
+                    });
+                    lotMarkers.push(lotMarker);
+                    getLotData(lotData, lotMarker);
+                };
+                var lotMarkerCluster = new MarkerClusterer(map, lotMarkers);
+
+                //captures lot data and makes them available for display in infowindow when lot marker is clicked
+                var lotInfoWindow = new google.maps.InfoWindow();
+                function getLotData(lD, lM) {
+                    google.maps.event.addListener(lM, 'click', function() {
+                        lotInfoWindow.open(map, lM);
+                        lotInfoWindow.setContent(
+                            "<p>" + "<b>" + lD.name + "</b>" + "<br />" 
+                            + "Spaces: " + lD.available_spaces + "</p>"
+                        );
+                    });
+                };
+            });
+
+
         // collects and plots parking meters on map
         $scope.meters = [];
         $http.get("https://parking.api.smgov.net/meters/")
@@ -84,6 +131,7 @@ parkspy.controller('MapCtrl', function($scope, $http) {
 
 
                 // collects and plots parking meters on map
+                var meterMarkers = [];
                 for (var i = 0; i < ($scope.meters.length); i++) {
                     var meterData = $scope.meters[i];
 
@@ -103,10 +151,11 @@ parkspy.controller('MapCtrl', function($scope, $http) {
                         map: map,
                     });
                     meterMarker.setIcon(getIcon());
+                    meterMarkers.push(meterMarker);
                     getMeterData(meterData, meterMarker);
                     // getMeterSession(meterData);
                 };
-
+                var meterMarkerCluster = new MarkerClusterer(map, meterMarkers);
 
                 //captures meter data and makes them available for display in infowindow when meter marker is clicked
                 var meterInfoWindow = new google.maps.InfoWindow();
@@ -158,49 +207,6 @@ parkspy.controller('MapCtrl', function($scope, $http) {
                     });
                 };
             }); 
-
-
-        // collects and plots parking lots/structures on map
-        $scope.lots = [];
-        $http.get("https://parking.api.smgov.net/lots/")
-            .success(function(data, status, headers, config){
-                $scope.lots = data;
-                // counts number of lots
-                // console.log($scope.lots.length);
-
-
-                // collects and plots parking lots/structures on map
-                for (var i = 0; i < ($scope.lots.length); i++) {
-                    var lotData = $scope.lots[i];
-                    var lotImage = 'img/lot-icon.png';
-                    var lotPosition = new google.maps.LatLng(lotData.latitude, lotData.longitude);
-                    var lotMarker = new google.maps.Marker({
-                        position: lotPosition,
-                        map: map,
-                        icon: lotImage
-                    });
-                    getLotData(lotData, lotMarker);
-                };
-
-                //captures lot data and makes them available for display in infowindow when lot marker is clicked
-                var lotInfoWindow = new google.maps.InfoWindow();
-                function getLotData(lD, lM) {
-                    google.maps.event.addListener(lM, 'click', function() {
-                        lotInfoWindow.open(map, lM);
-                        lotInfoWindow.setContent(
-                            "<p>" + "<b>" + lD.name + "</b>" + "<br />" 
-                            + "Spaces: " + lD.available_spaces + "</p>"
-                        );
-                    });
-                };
-            });
-
-        // adds traffic layer to map
-        var trafficLayer = new google.maps.TrafficLayer();
-        trafficLayer.setMap(map);
-
-        // calls map
-        $scope.map = map;
 
 
 
