@@ -27,20 +27,45 @@ parkspy.controller('MapCtrl', function($scope, $http) {
         // variable center set to santa monica city hall
         var center = new google.maps.LatLng(34.011769, -118.49162);
 
+        var mapStyle = [
+              {
+                "featureType": "road",
+                "elementType": "geometry",
+                "stylers": [
+                  { "visibility": "on" },
+                  { "color": "#808080" },
+                  { "weight": 0.1 }
+                ]
+              }
+            ]
+
         // default map options
         var mapOptions = {
           center: center,
           zoom: 18,
-          mapTypeId: google.maps.MapTypeId.ROADMAP
+          mapTypeControlOptions: {
+              mapTypeIds: [google.maps.MapTypeId.ROADMAP, 'santamonicamap']
+          }
         };
 
         // targets html element where map will be placed
         var map = new google.maps.Map(document.getElementById('map'), mapOptions);
 
+
+        var styledMapOptions = {
+            name: "Santa Monica Map"
+        };
+
+
+        var SantaMonicaRoadMapType = new google.maps.StyledMapType(mapStyle, styledMapOptions);
+
+        map.mapTypes.set('santamonicamap', SantaMonicaRoadMapType);
+        map.setMapTypeId('santamonicamap');
+
         // gets current position
         navigator.geolocation.getCurrentPosition(function(position) {
             var pos = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-            map.setCenter(pos);
+            // map.setCenter(pos);
         });
 
         // adds test marker to map center => Santa Monica city hall
@@ -87,8 +112,8 @@ parkspy.controller('MapCtrl', function($scope, $http) {
                 var meterInfoWindow = new google.maps.InfoWindow();
                 function getMeterData(mD, mM) {
 
-
-                    var getMeterStatus = function () {
+                    //captures meter status
+                    var getMeterStatus = function() {
                         if (mD.active == true ) {
                             return "Status: Working";
                         } else {
@@ -97,25 +122,39 @@ parkspy.controller('MapCtrl', function($scope, $http) {
 
                     };
 
+
                     google.maps.event.addListener(mM, 'click', function() {
 
-
-
-                    $scope.meterSession = [];
+                        //captures meter session
+                        $scope.meterSession = [];
                         $http.get("https://parking.api.smgov.net/meters/" + mD.meter_id + "/events/since/0")
                             .success(function(data, status, headers, config) {
                                 $scope.meterSession = data;
-                                console.log($scope.meterSession)
-                        });
+                                // console.log($scope.meterSession)
 
+                                //gets meter session detail
+                                var getSessionDetail = function() {
+                                    var sessionDetail = $scope.meterSession;
+                                    // console.log(sessionDetail);
 
+                                    if ((sessionDetail.length > 0) && (sessionDetail[0].event_type == "SS")) {
+                                        return "Availability: Occupied";
+                                    } else if ((sessionDetail.length > 0) && (sessionDetail[0].event_type == "SE")) {
+                                        return "Availability: Vacant, but not for long!";
+                                    } else {
+                                        return "Availability: Sorry, no details available."
+                                    };
+                                };                         
 
-                        meterInfoWindow.open(map, mM);
-                        meterInfoWindow.setContent(
-                            "<p>" + "ID: " + "<b>" + mD.meter_id + "</b>" + "<br />"
-                            + "<p>" + "Street: " + "<b>" + mD.street_address + "</b>" + "<br />"
-                            + getMeterStatus()
-                        );
+                                //info window pops up on click
+                                meterInfoWindow.open(map, mM);
+                                meterInfoWindow.setContent(
+                                    "<p>" + "ID: " + "<b>" + mD.meter_id + "</b>" + "<br />"
+                                    + "<p>" + "Street: " + "<b>" + mD.street_address + "</b>" + "<br />"
+                                    + getMeterStatus() + "<br />"
+                                    + getSessionDetail()
+                                );
+                            });
                     });
                 };
             }); 
@@ -162,6 +201,8 @@ parkspy.controller('MapCtrl', function($scope, $http) {
 
         // calls map
         $scope.map = map;
+
+
 
     });
 
