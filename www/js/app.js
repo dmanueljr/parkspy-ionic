@@ -155,7 +155,8 @@ parkspy.controller('MapCtrl', function($scope, $http) {
                     getMeterData(meterData, meterMarker);
                     // getMeterSession(meterData);
                 };
-                var meterMarkerCluster = new MarkerClusterer(map, meterMarkers);
+                var meterClusterOptions = {maxZoom: 19};
+                var meterMarkerCluster = new MarkerClusterer(map, meterMarkers, meterClusterOptions);
 
                 //captures meter data and makes them available for display in infowindow when meter marker is clicked
                 var meterInfoWindow = new google.maps.InfoWindow();
