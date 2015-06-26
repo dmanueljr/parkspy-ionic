@@ -29,21 +29,42 @@ parkspy.controller('MapCtrl', function($scope, $http) {
 
         // defines map style
         var mapStyle = [
-              {
-                "featureType": "road",
-                "elementType": "geometry",
-                "stylers": [
-                  { "visibility": "on" },
-                  { "color": "#808080" },
-                  { "weight": 0.1 }
-                ]
-              }
-            ]
+            {
+              "featureType": "landscape",
+              "elementType": "geometry",
+              "stylers": [
+                { "visibility": "on" },
+                { "color": "#f1f1f1" }
+              ]
+            },{
+              "featureType": "road",
+              "elementType": "geometry",
+              "stylers": [
+                { "visibility": "on" },
+                { "color": "#808080" },
+                { "weight": 0.1 }
+              ]
+            },{
+              "featureType": "poi",
+              "elementType": "geometry.fill",
+              "stylers": [
+                { "visibility": "on" },
+                { "color": "#f8f8f8" }
+              ]
+            },{
+              "featureType": "administrative",
+              "elementType": "labels.text.fill",
+              "stylers": [
+                { "visibility": "on" },
+                { "color": "#cc3333" }
+              ]
+            }
+          ]
 
         // default map options
         var mapOptions = {
           center: center,
-          zoom: 18,
+          zoom: 16,
           mapTypeControlOptions: {
               mapTypeIds: [google.maps.MapTypeId.ROADMAP, 'santamonicamap']
           }
@@ -67,13 +88,21 @@ parkspy.controller('MapCtrl', function($scope, $http) {
         // calls map
         $scope.map = map;
 
-
+        // adds geolocation marker
+        var geomarker = new GeolocationMarker(map);
+        geomarker.setCircleOptions({
+            fillOpacity: 0.2,
+            strokeOpacity: 0.0,
+            fillColor: "#0066cc"
+        });
+        // console.log(geomarker.getAccuracy());
 
         // gets current position
         navigator.geolocation.getCurrentPosition(function(position) {
             var pos = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-            // map.setCenter(pos);
+            map.setCenter(pos);
         });
+        geomarker.setMap(map);
 
         // adds test marker to map center => Santa Monica city hall
         var marker = new google.maps.Marker({
@@ -199,18 +228,14 @@ parkspy.controller('MapCtrl', function($scope, $http) {
                                 //info window pops up on click
                                 meterInfoWindow.open(map, mM);
                                 meterInfoWindow.setContent(
-                                    "<p>" + "ID: " + "<b>" + mD.meter_id + "</b>" + "<br />"
+                                    "<p>" + "ID: " + "<b>" + mD.meter_id + "</b>" + "</p>"
                                     + "<p>" + "Street: " + "<b>" + mD.street_address + "</b>" + "<br />"
                                     + getMeterStatus() + "<br />"
-                                    + getSessionDetail()
-                                );
+                                    + getSessionDetail() + "</p>");
                             });
                     });
                 };
             }); 
-
-
-
     });
 
 
