@@ -95,6 +95,12 @@ parkspy.controller('MapCtrl', function($scope, $http) {
             strokeOpacity: 0.0,
             fillColor: "#0066cc"
         });
+
+        google.maps.event.addListenerOnce(geomarker, 'position_changed', function() {
+            map.setCenter(this.getPosition());
+            map.fitBounds(this.getBounds());
+        });
+
         // console.log(geomarker.getAccuracy());
 
         // gets current position
